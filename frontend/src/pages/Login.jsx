@@ -31,39 +31,113 @@ export default function Login() {
 
   return (
     <div className="login-page">
-      {/* Left panel */}
+      {/* Left Warm Aesthetic Panel */}
       <div className="login-left">
-        <div className="login-brand-icon">
-          <GraduationCap size={36} color="#fff" />
-        </div>
-        <h1 className="login-brand-title">LecSchedule</h1>
-        <p className="login-brand-desc">
-          Manage your courses, assign lectures to instructors,
-          and prevent scheduling conflicts — all in one place.
-        </p>
-        <div className="login-features">
-          <div className="login-feature">
-            <div className="login-feature-icon">
-              <BookOpen size={16} color="#f97316" />
+        {/* Top-Left Organic Layered Wave SVG */}
+        <svg className="login-bg-wave-tl-svg" viewBox="0 0 500 500" fill="none" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="waveTl1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#ea580c" stopOpacity="0.95" />
+              <stop offset="100%" stopColor="#f97316" stopOpacity="0.8" />
+            </linearGradient>
+            <linearGradient id="waveTl2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#fb923c" stopOpacity="0.65" />
+              <stop offset="100%" stopColor="#ffedd5" stopOpacity="0.35" />
+            </linearGradient>
+          </defs>
+          <path d="M-20 -20 L400 -20 Q300 130 180 190 Q60 250 -20 380 Z" fill="url(#waveTl1)" />
+          <path d="M-20 -20 L480 -20 Q370 170 230 230 Q90 290 -20 460 Z" fill="url(#waveTl2)" />
+          <path d="M-20 120 Q160 140 260 60" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" fill="none" />
+        </svg>
+
+        {/* Bottom-Right Organic Layered Wave SVG with Contour Lines */}
+        <svg className="login-bg-wave-br-svg" viewBox="0 0 600 600" fill="none" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="waveBr1" x1="100%" y1="100%" x2="0%" y2="0%">
+              <stop offset="0%" stopColor="#ea580c" stopOpacity="0.95" />
+              <stop offset="100%" stopColor="#f97316" stopOpacity="0.8" />
+            </linearGradient>
+            <linearGradient id="waveBr2" x1="100%" y1="100%" x2="0%" y2="0%">
+              <stop offset="0%" stopColor="#fb923c" stopOpacity="0.75" />
+              <stop offset="100%" stopColor="#fed7aa" stopOpacity="0.45" />
+            </linearGradient>
+            <linearGradient id="waveBr3" x1="100%" y1="100%" x2="0%" y2="0%">
+              <stop offset="0%" stopColor="#fdba74" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#fff7ed" stopOpacity="0.15" />
+            </linearGradient>
+          </defs>
+          <path d="M620 620 L620 180 Q440 340 310 420 Q150 500 -20 620 Z" fill="url(#waveBr1)" />
+          <path d="M620 620 L620 90 Q380 270 230 370 Q70 470 -90 620 Z" fill="url(#waveBr2)" />
+          <path d="M620 620 L620 0 Q320 210 150 330 Q-30 430 -160 620 Z" fill="url(#waveBr3)" />
+          <path d="M580 250 Q410 370 270 450 Q130 530 -20 610" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" fill="none" />
+          <path d="M580 290 Q430 400 290 480 Q150 560 10 630" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" fill="none" />
+        </svg>
+
+        {/* Floating Center Hero Card */}
+        <div className="login-hero-card">
+          {/* Card Decorative Accents */}
+          <div className="login-dot-grid-left" />
+          <div className="login-dot-grid-right" />
+          <svg className="login-card-arc-tr" viewBox="0 0 160 160" fill="none">
+            <circle cx="120" cy="40" r="70" stroke="#ea580c" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.3" />
+            <circle cx="120" cy="40" r="4" fill="#ea580c" opacity="0.8" />
+          </svg>
+
+          {/* Logo Badge */}
+          <div className="login-hero-logo-wrapper">
+            <div className="login-hero-logo-badge">
+              <GraduationCap size={34} color="#fff" />
             </div>
-            Course &amp; batch management
           </div>
-          <div className="login-feature">
-            <div className="login-feature-icon">
-              <Users size={16} color="#a855f7" />
+
+          {/* Title with Underline Accent */}
+          <h1 className="login-hero-title">
+            Lec<span className="text-orange-highlight">Schedule</span>
+          </h1>
+          <div className="login-title-underline" />
+
+          {/* Subtitle */}
+          <p className="login-hero-subtitle">
+            Manage your courses, assign lectures to instructors,
+            and prevent scheduling conflicts — all in one place.
+          </p>
+
+          {/* 3 Feature Cards Grid */}
+          <div className="login-hero-features-grid">
+            <div className="login-hero-feature-card">
+              <div className="login-hero-feature-icon-badge">
+                <BookOpen size={20} color="#ea580c" />
+              </div>
+              <div className="login-hero-feature-label">
+                Course &amp; Batch<br />Management
+              </div>
+              <div className="login-hero-feature-dot" />
             </div>
-            Instructor assignment
-          </div>
-          <div className="login-feature">
-            <div className="login-feature-icon">
-              <CalendarCheck size={16} color="#22c55e" />
+
+            <div className="login-hero-feature-card">
+              <div className="login-hero-feature-icon-badge">
+                <Users size={20} color="#ea580c" />
+              </div>
+              <div className="login-hero-feature-label">
+                Instructor<br />Assignment
+              </div>
+              <div className="login-hero-feature-dot" />
             </div>
-            Smart conflict detection
+
+            <div className="login-hero-feature-card">
+              <div className="login-hero-feature-icon-badge">
+                <CalendarCheck size={20} color="#ea580c" />
+              </div>
+              <div className="login-hero-feature-label">
+                Smart Conflict<br />Detection
+              </div>
+              <div className="login-hero-feature-dot" />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Right panel */}
+      {/* Right Sign In Panel */}
       <div className="login-right">
         <h2 className="login-form-title">Welcome back</h2>
         <p className="login-form-sub">Sign in to continue to LecSchedule</p>
