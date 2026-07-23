@@ -19,6 +19,10 @@ export default function InstructorCalendarView() {
   );
   const lectures = lecturesData || [];
 
+  // Selected date modal state
+  const [selectedDateStr, setSelectedDateStr] = useState(null);
+  const [selectedDayLectures, setSelectedDayLectures] = useState([]);
+
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth(); // 0-indexed
 
