@@ -1135,7 +1135,7 @@ ul { list-style: none; }
 .gap-8  { gap: 8px; }
 .gap-12 { gap: 12px; }
 
-.avatar-colors { }
+/* avatar-colors */
 .avatar-0 { background: var(--orange-500); }
 .avatar-1 { background: var(--blue); }
 .avatar-2 { background: var(--purple); }
