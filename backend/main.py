@@ -61,3 +61,10 @@ def startup_event():
 @app.get("/")
 async def root():
     return {"status": "ok", "message": "Lecture Scheduling API is running"}
+
+@app.get("/health")
+@app.head("/health")
+async def health():
+    """Ultra-lightweight endpoint for cron jobs & uptime monitors to keep backend active."""
+    return {"status": "ok"}
+

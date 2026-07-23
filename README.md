@@ -58,6 +58,7 @@ Whether you're managing multiple batches or tracking individual instructor agend
 
 - **Frontend App (Vercel)**: [https://online-lecture-scheduling-nine.vercel.app](https://online-lecture-scheduling-nine.vercel.app)
 - **Backend API (Render)**: [https://online-lecture-scheduling-b8nv.onrender.com](https://online-lecture-scheduling-b8nv.onrender.com)
+- **API Health Check (Cron Ping)**: [https://online-lecture-scheduling-b8nv.onrender.com/health](https://online-lecture-scheduling-b8nv.onrender.com/health) *(Returns 17 bytes: `{"status":"ok"}`)*
 - **API Swagger Docs**: [https://online-lecture-scheduling-b8nv.onrender.com/docs](https://online-lecture-scheduling-b8nv.onrender.com/docs)
 
 ### 🔑 Demo Login Accounts
