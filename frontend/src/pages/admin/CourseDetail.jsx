@@ -7,6 +7,107 @@ import {
 import api from "../../api";
 import toast from "react-hot-toast";
 
+// ─── Custom Time Picker ───────────────────────────────────────────────────────
+function TimePicker({ value, onChange, label, id }) {
+  // value is "HH:MM" in 24-hour format
+  const parse = (v) => {
+    if (!v) return { hour: "", minute: "00", ampm: "AM" };
+    const [h, m] = v.split(":").map(Number);
+    const ampm = h >= 12 ? "PM" : "AM";
+    const hour = h % 12 === 0 ? 12 : h % 12;
+    return { hour: String(hour), minute: String(m).padStart(2, "0"), ampm };
+  };
+
+  const to24 = (hour, minute, ampm) => {
+    let h = parseInt(hour, 10);
+    if (isNaN(h)) return "";
+    if (ampm === "AM") { if (h === 12) h = 0; }
+    else               { if (h !== 12) h += 12; }
+    return `${String(h).padStart(2, "0")}:${minute}`;
+  };
+
+  const { hour, minute, ampm } = parse(value);
+
+  const set = (h, m, a) => { const v24 = to24(h, m, a); if (v24) onChange(v24); };
+
+  const handleHour = (e) => {
+    let v = e.target.value.replace(/\D/g, "").slice(0, 2);
+    if (v && parseInt(v) > 12) v = "12";
+    if (v && parseInt(v) < 1)  v = "1";
+    set(v || hour, minute, ampm);
+  };
+
+  const handleMinute = (e) => {
+    let v = e.target.value.replace(/\D/g, "").slice(0, 2);
+    if (v && parseInt(v) > 59) v = "59";
+    set(hour, v.padStart(2, "0") || minute, ampm);
+  };
+
+  const toggleAmPm = (a) => set(hour, minute, a);
+
+  return (
+    <div className="form-group">
+      <label className="form-label">{label}</label>
+      <div style={{
+        display: "flex", alignItems: "center", gap: 8,
+        background: "var(--gray-50)", border: "1.5px solid var(--gray-200)",
+        borderRadius: "var(--radius-md)", padding: "10px 14px",
+      }}>
+        {/* Hour */}
+        <input
+          id={id}
+          type="text"
+          inputMode="numeric"
+          maxLength={2}
+          placeholder="--"
+          value={hour}
+          onChange={handleHour}
+          style={{
+            width: 42, border: "none", background: "transparent",
+            fontSize: 22, fontWeight: 700, textAlign: "center",
+            color: "var(--dark)", outline: "none",
+          }}
+        />
+        <span style={{ fontSize: 22, fontWeight: 700, color: "var(--gray-400)" }}>:</span>
+        {/* Minute */}
+        <input
+          type="text"
+          inputMode="numeric"
+          maxLength={2}
+          placeholder="00"
+          value={minute}
+          onChange={handleMinute}
+          style={{
+            width: 42, border: "none", background: "var(--gray-200)",
+            fontSize: 22, fontWeight: 700, textAlign: "center",
+            color: "var(--dark)", outline: "none",
+            borderRadius: "var(--radius-sm)", padding: "2px 0",
+          }}
+        />
+        {/* AM / PM */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 3, marginLeft: 6 }}>
+          {["AM", "PM"].map(a => (
+            <button
+              key={a}
+              type="button"
+              onClick={() => toggleAmPm(a)}
+              style={{
+                padding: "2px 10px", border: "none", borderRadius: "var(--radius-sm)",
+                fontWeight: 700, fontSize: 12, cursor: "pointer",
+                background: ampm === a ? "var(--orange-500)" : "var(--gray-200)",
+                color:      ampm === a ? "#fff"             : "var(--gray-600)",
+              }}
+            >
+              {a}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 const STATUS_OPTIONS = ["Scheduled", "Completed", "Cancelled"];
 
 export default function CourseDetail() {
@@ -61,6 +162,18 @@ export default function CourseDetail() {
     if (!form.lectureTitle || !form.batch || !form.instructorId || !form.lectureDate || !form.startTime || !form.endTime) {
       setFormError("All fields are required.");
       return;
+    }
+    // Past-time check: if today's date is selected, start time must be in the future
+    const todayStr = new Date().toISOString().split("T")[0];
+    if (form.lectureDate === todayStr) {
+      const now = new Date();
+      const [sh, sm] = form.startTime.split(":").map(Number);
+      const pickedStart = new Date();
+      pickedStart.setHours(sh, sm, 0, 0);
+      if (pickedStart <= now) {
+        setFormError("Start time has already passed for today. Please choose a future time.");
+        return;
+      }
     }
     if (form.startTime >= form.endTime) {
       setFormError("End time must be after start time.");
@@ -324,28 +437,18 @@ export default function CourseDetail() {
                 </div>
 
                 <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Start Time</label>
-                    <input
-                      id="lec-start"
-                      name="startTime"
-                      type="time"
-                      className="form-input"
-                      value={form.startTime}
-                      onChange={handleFormChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">End Time</label>
-                    <input
-                      id="lec-end"
-                      name="endTime"
-                      type="time"
-                      className="form-input"
-                      value={form.endTime}
-                      onChange={handleFormChange}
-                    />
-                  </div>
+                  <TimePicker
+                    id="lec-start"
+                    label="Start Time"
+                    value={form.startTime}
+                    onChange={v => { setForm(p => ({ ...p, startTime: v })); setFormError(""); setConflictError(""); }}
+                  />
+                  <TimePicker
+                    id="lec-end"
+                    label="End Time"
+                    value={form.endTime}
+                    onChange={v => { setForm(p => ({ ...p, endTime: v })); setFormError(""); setConflictError(""); }}
+                  />
                 </div>
 
                 <div className="form-group">

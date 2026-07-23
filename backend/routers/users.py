@@ -32,13 +32,13 @@ async def seed_instructors():
     db = get_db()
 
     sample_instructors = [
-        {"name": "Rahul Sharma",  "email": "rahul@lecschedule.com",  "role": "instructor"},
-        {"name": "Priya Mehta",   "email": "priya@lecschedule.com",  "role": "instructor"},
-        {"name": "Aman Khan",     "email": "aman@lecschedule.com",   "role": "instructor"},
-        {"name": "Sneha Iyer",    "email": "sneha@lecschedule.com",  "role": "instructor"},
-        {"name": "Rohan Verma",   "email": "rohan@lecschedule.com",  "role": "instructor"},
+        {"name": "Rahul Sharma",  "email": "rahul@lecschedule.com",  "role": "instructor", "designation": "Frontend Development Teacher"},
+        {"name": "Priya Mehta",   "email": "priya@lecschedule.com",  "role": "instructor", "designation": "System Design Teacher"},
+        {"name": "Aman Khan",     "email": "aman@lecschedule.com",   "role": "instructor", "designation": "Backend Development Teacher"},
+        {"name": "Sneha Iyer",    "email": "sneha@lecschedule.com",  "role": "instructor", "designation": "Data Structures & Algorithms Teacher"},
+        {"name": "Rohan Verma",   "email": "rohan@lecschedule.com",  "role": "instructor", "designation": "Cloud & DevOps Teacher"},
     ]
-    admin_user = {"name": "Admin", "email": "admin@lecschedule.com", "role": "admin"}
+    admin_user = {"name": "Admin", "email": "admin@lecschedule.com", "role": "admin", "designation": "Administrator"}
     all_users = [admin_user] + sample_instructors
 
     created = []
@@ -71,6 +71,7 @@ async def seed_instructors():
                     "name": user["name"],
                     "email": user["email"],
                     "role": user["role"],
+                    "designation": user.get("designation", ""),
                     "createdAt": datetime.utcnow(),
                 }
             )

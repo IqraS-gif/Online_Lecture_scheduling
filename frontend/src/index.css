@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:ital,wght@0,100..700;1,100..700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
 
 /* =====================
    CSS CUSTOM PROPERTIES
@@ -777,14 +777,16 @@ ul { list-style: none; }
 }
 
 .page-title {
-  font-size: 22px;
-  font-weight: 800;
+  font-size: 26px;
+  font-weight: 700;
+  font-family: 'Playfair Display', serif;
   color: var(--dark);
 }
 
 .page-subtitle {
   font-size: 14px;
-  color: var(--gray-500);
+  color: var(--dark);
+  font-weight: 600;
   margin-top: 2px;
 }
 

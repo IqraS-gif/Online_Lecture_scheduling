@@ -51,8 +51,24 @@ async def create_course(
     description: str = Form(...),
     image: UploadFile = File(None),
 ):
-    """Create a new course. If an image is provided it is uploaded to Cloudinary."""
+    """Create a new course. Checks for duplicate (name + level) before creation."""
     db = get_db()
+    clean_name = name.strip()
+    clean_level = level.strip()
+
+    # --- Duplicate Check (name AND level) ---
+    existing_docs = (
+        db.collection("courses")
+        .where("name", "==", clean_name)
+        .where("level", "==", clean_level)
+        .stream()
+    )
+    if list(existing_docs):
+        raise HTTPException(
+            status_code=409,
+            detail=f"A course with the name '{clean_name}' and level '{clean_level}' already exists.",
+        )
+
     image_url = None
 
     if image and image.filename:
@@ -65,9 +81,9 @@ async def create_course(
         image_url = upload_result.get("secure_url")
 
     course_data = {
-        "name": name,
-        "level": level,
-        "description": description,
+        "name": clean_name,
+        "level": clean_level,
+        "description": description.strip(),
         "imageUrl": image_url,
         "createdAt": datetime.utcnow(),
     }
@@ -90,13 +106,32 @@ async def update_course(
     if not doc_ref.get().exists:
         raise HTTPException(status_code=404, detail="Course not found")
 
+    current_data = doc_ref.get().to_dict()
+    target_name = (name.strip() if name else current_data.get("name", "")).strip()
+    target_level = (level.strip() if level else current_data.get("level", "")).strip()
+
+    # Check for duplicates excluding current course
+    if name or level:
+        existing_docs = (
+            db.collection("courses")
+            .where("name", "==", target_name)
+            .where("level", "==", target_level)
+            .stream()
+        )
+        for doc in existing_docs:
+            if doc.id != course_id:
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"A course with the name '{target_name}' and level '{target_level}' already exists.",
+                )
+
     updates = {}
     if name:
-        updates["name"] = name
+        updates["name"] = target_name
     if level:
-        updates["level"] = level
+        updates["level"] = target_level
     if description:
-        updates["description"] = description
+        updates["description"] = description.strip()
     if image and image.filename:
         contents = await image.read()
         upload_result = cloudinary.uploader.upload(
