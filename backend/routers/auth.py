@@ -21,6 +21,8 @@ async def verify_token(payload: dict):
     except Exception as e:
         print(f"Token verification error: {e}")
         raise HTTPException(status_code=401, detail=f"Invalid or expired token: {e}")
+
+    uid = decoded["uid"]
     user_doc = db.collection("users").document(uid).get()
 
     if not user_doc.exists:
