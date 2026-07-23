@@ -14,10 +14,12 @@ app = FastAPI(
 )
 
 # CORS — allow the React frontend (set FRONTEND_ORIGIN in production env vars)
-frontend_origin = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
+raw_origins = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173,https://online-lecture-scheduling-nine.vercel.app")
+origins = [o.strip() for o in raw_origins.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[frontend_origin],
+    allow_origins=origins if origins else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
