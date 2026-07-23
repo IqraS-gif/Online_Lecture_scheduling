@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BookOpen, Plus, Trash2, ImageOff, ArrowRight, Search, X, AlertTriangle } from "lucide-react";
 import api from "../../api";
 import toast from "react-hot-toast";
+import { useCache, useDataCache } from "../../context/DataCacheContext";
 
 export default function Courses() {
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: coursesData, loading } = useCache("courses", () => api.get("/courses").then(r => r.data));
+  const courses = coursesData || [];
+  const { invalidatePattern } = useDataCache();
   const [deletingId, setDeletingId] = useState(null);
 
   // Search & Filter state
@@ -15,19 +17,6 @@ export default function Courses() {
 
   // Delete modal state
   const [deleteTarget, setDeleteTarget] = useState(null); // { course, lectureCount, loading }
-
-  const loadCourses = async () => {
-    try {
-      const res = await api.get("/courses");
-      setCourses(res.data);
-    } catch {
-      toast.error("Failed to load courses");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { loadCourses(); }, []);
 
   const initiateDelete = async (course) => {
     setDeletingId(course.id);
@@ -56,7 +45,8 @@ export default function Courses() {
     try {
       await api.delete(`/courses/${course.id}`);
       toast.success("Course deleted successfully");
-      setCourses(prev => prev.filter(c => c.id !== course.id));
+      invalidatePattern("courses");
+      invalidatePattern("lectures");
     } catch {
       toast.error("Failed to delete course");
     } finally {

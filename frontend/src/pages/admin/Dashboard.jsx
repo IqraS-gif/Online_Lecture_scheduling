@@ -1,38 +1,27 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   BookOpen, Users, CalendarDays, Clock, ArrowRight,
   Calendar, FileText, User, MoreVertical, Menu
 } from "lucide-react";
 import api from "../../api";
+import { useCache } from "../../context/DataCacheContext";
 
 export default function Dashboard() {
-  const [stats, setStats] = useState({ courses: 0, instructors: 0, lectures: 0 });
-  const [recentLectures, setRecentLectures] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: coursesData, loading: loadingCourses } = useCache("courses", () => api.get("/courses").then(r => r.data));
+  const { data: instructorsData, loading: loadingInstructors } = useCache("instructors", () => api.get("/users/instructors").then(r => r.data));
+  const { data: lecturesData, loading: loadingLectures } = useCache("lectures", () => api.get("/lectures").then(r => r.data));
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const [coursesRes, instructorsRes, lecturesRes] = await Promise.all([
-          api.get("/courses"),
-          api.get("/users/instructors"),
-          api.get("/lectures"),
-        ]);
-        setStats({
-          courses:     coursesRes.data.length,
-          instructors: instructorsRes.data.length,
-          lectures:    lecturesRes.data.length,
-        });
-        setRecentLectures(lecturesRes.data.slice(0, 8));
-      } catch {
-        // ignore
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
+  const loading = loadingCourses || loadingInstructors || loadingLectures;
+  const courses = coursesData || [];
+  const instructors = instructorsData || [];
+  const lectures = lecturesData || [];
+
+  const stats = {
+    courses: courses.length,
+    instructors: instructors.length,
+    lectures: lectures.length,
+  };
+  const recentLectures = lectures.slice(0, 8);
 
   const statCards = [
     {

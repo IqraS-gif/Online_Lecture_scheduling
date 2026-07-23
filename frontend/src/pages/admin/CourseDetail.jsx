@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   ArrowLeft, Plus, Trash2, BookOpen, ImageOff,
@@ -108,14 +108,22 @@ function TimePicker({ value, onChange, label, id }) {
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { useCache, useDataCache } from "../../context/DataCacheContext";
+
 const STATUS_OPTIONS = ["Scheduled", "Completed", "Cancelled"];
 
 export default function CourseDetail() {
   const { id } = useParams();
-  const [course, setCourse] = useState(null);
-  const [lectures, setLectures] = useState([]);
-  const [instructors, setInstructors] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { invalidatePattern } = useDataCache();
+
+  const { data: course, loading: loadingCourse } = useCache(`course:${id}`, () => api.get(`/courses/${id}`).then(r => r.data));
+  const { data: lecturesData, loading: loadingLec } = useCache(`lectures:course:${id}`, () => api.get(`/lectures?courseId=${id}`).then(r => r.data));
+  const { data: instructorsData, loading: loadingInst } = useCache("instructors", () => api.get("/users/instructors").then(r => r.data));
+
+  const lectures = lecturesData || [];
+  const instructors = instructorsData || [];
+  const loading = loadingCourse || loadingLec || loadingInst;
+
   const [showModal, setShowModal] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
@@ -131,25 +139,6 @@ export default function CourseDetail() {
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState("");
   const [conflictError, setConflictError] = useState("");
-
-  const loadData = async () => {
-    try {
-      const [courseRes, lecturesRes, instRes] = await Promise.all([
-        api.get(`/courses/${id}`),
-        api.get(`/lectures?courseId=${id}`),
-        api.get("/users/instructors"),
-      ]);
-      setCourse(courseRes.data);
-      setLectures(lecturesRes.data);
-      setInstructors(instRes.data);
-    } catch {
-      toast.error("Failed to load course data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { loadData(); }, [id]);
 
   const handleFormChange = (e) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -183,7 +172,7 @@ export default function CourseDetail() {
     setFormLoading(true);
     setFormError("");
     try {
-      const res = await api.post("/lectures", {
+      await api.post("/lectures", {
         courseId: id,
         lectureTitle: form.lectureTitle,
         batch: form.batch,
@@ -196,7 +185,7 @@ export default function CourseDetail() {
       toast.success("Lecture scheduled successfully");
       setShowModal(false);
       setForm({ lectureTitle: "", batch: "", instructorId: "", lectureDate: "", startTime: "", endTime: "", status: "Scheduled" });
-      await loadData();
+      invalidatePattern("lectures");
     } catch (err) {
       const status = err?.response?.status;
       const msg = err?.response?.data?.detail || "Failed to schedule lecture";
@@ -217,7 +206,7 @@ export default function CourseDetail() {
     try {
       await api.delete(`/lectures/${lectureId}`);
       toast.success("Lecture deleted");
-      setLectures(prev => prev.filter(l => l.id !== lectureId));
+      invalidatePattern("lectures");
     } catch {
       toast.error("Failed to delete lecture");
     } finally {

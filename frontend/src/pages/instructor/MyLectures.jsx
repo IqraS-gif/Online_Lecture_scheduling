@@ -1,21 +1,16 @@
-import { useEffect, useState } from "react";
 import { CalendarDays, Clock, BookOpen, GraduationCap } from "lucide-react";
 import api from "../../api";
 import { useAuth } from "../../context/AuthContext";
+import { useCache } from "../../context/DataCacheContext";
 
 export default function MyLectures() {
   const { profile } = useAuth();
-  const [lectures, setLectures] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!profile?.uid) return;
-    api
-      .get(`/lectures/instructor/${profile.uid}`)
-      .then(res => setLectures(res.data))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [profile]);
+  const { data: lecturesData, loading } = useCache(
+    `lectures:instructor:${profile?.uid}`,
+    () => api.get(`/lectures/instructor/${profile?.uid}`).then(r => r.data),
+    { skip: !profile?.uid }
+  );
+  const lectures = lecturesData || [];
 
   const statusClass = {
     Scheduled: "badge status-Scheduled",

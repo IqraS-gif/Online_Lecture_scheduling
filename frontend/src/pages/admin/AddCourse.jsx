@@ -3,11 +3,13 @@ import { useNavigate, Link } from "react-router-dom";
 import { Upload, BookOpen, ArrowLeft } from "lucide-react";
 import api from "../../api";
 import toast from "react-hot-toast";
+import { useDataCache } from "../../context/DataCacheContext";
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"];
 
 export default function AddCourse() {
   const navigate = useNavigate();
+  const { invalidatePattern } = useDataCache();
   const fileRef = useRef(null);
   const [form, setForm] = useState({ name: "", level: "Beginner", description: "" });
   const [image, setImage] = useState(null);
@@ -55,6 +57,7 @@ export default function AddCourse() {
         headers: { "Content-Type": "multipart/form-data" },
       });
       toast.success("Course created successfully");
+      invalidatePattern("courses");
       navigate("/admin/courses");
     } catch (err) {
       toast.error(err?.response?.data?.detail || "Failed to create course");

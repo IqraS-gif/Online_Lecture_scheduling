@@ -1,31 +1,23 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   ChevronLeft, ChevronRight, Calendar as CalendarIcon,
   Clock, BookOpen, X, GraduationCap
 } from "lucide-react";
 import api from "../../api";
 import { useAuth } from "../../context/AuthContext";
+import { useCache } from "../../context/DataCacheContext";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default function InstructorCalendarView() {
   const { profile } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [lectures, setLectures] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // Selected date modal state
-  const [selectedDateStr, setSelectedDateStr] = useState(null);
-  const [selectedDayLectures, setSelectedDayLectures] = useState([]);
-
-  useEffect(() => {
-    if (!profile?.uid) return;
-    api
-      .get(`/lectures/instructor/${profile.uid}`)
-      .then(res => setLectures(res.data))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [profile]);
+  const { data: lecturesData, loading } = useCache(
+    `lectures:instructor:${profile?.uid}`,
+    () => api.get(`/lectures/instructor/${profile?.uid}`).then(r => r.data),
+    { skip: !profile?.uid }
+  );
+  const lectures = lecturesData || [];
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth(); // 0-indexed

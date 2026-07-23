@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Users, CalendarDays, Clock, BookOpen, X, GraduationCap, Search } from "lucide-react";
 import api from "../../api";
+import { useCache } from "../../context/DataCacheContext";
 
 const AVATAR_COLORS = ["#f97316", "#3b82f6", "#a855f7", "#22c55e", "#ec4899"];
 
@@ -11,9 +12,17 @@ const statusClass = {
 };
 
 export default function Instructors() {
-  const [instructors, setInstructors]     = useState([]);
-  const [lectureCounts, setLectureCounts] = useState({});
-  const [loading, setLoading]             = useState(true);
+  const { data: instructorsData, loading: loadingInst } = useCache("instructors", () => api.get("/users/instructors").then(r => r.data));
+  const { data: lecturesData, loading: loadingLec } = useCache("lectures", () => api.get("/lectures").then(r => r.data));
+
+  const instructors = instructorsData || [];
+  const lectures = lecturesData || [];
+  const loading = loadingInst || loadingLec;
+
+  const lectureCounts = {};
+  lectures.forEach(lec => {
+    lectureCounts[lec.instructorId] = (lectureCounts[lec.instructorId] || 0) + 1;
+  });
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -22,29 +31,6 @@ export default function Instructors() {
   const [selectedInst, setSelectedInst]       = useState(null);
   const [instLectures, setInstLectures]       = useState([]);
   const [lecturesLoading, setLecturesLoading] = useState(false);
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const [instRes, lecRes] = await Promise.all([
-          api.get("/users/instructors"),
-          api.get("/lectures"),
-        ]);
-        setInstructors(instRes.data);
-
-        const counts = {};
-        lecRes.data.forEach(lec => {
-          counts[lec.instructorId] = (counts[lec.instructorId] || 0) + 1;
-        });
-        setLectureCounts(counts);
-      } catch {
-        // ignore
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
 
   const getInitials = (name) =>
     name ? name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "??";

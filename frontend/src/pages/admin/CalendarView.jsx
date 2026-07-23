@@ -1,34 +1,21 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   ChevronLeft, ChevronRight, Calendar as CalendarIcon,
   Clock, Users, BookOpen, X, GraduationCap
 } from "lucide-react";
 import api from "../../api";
+import { useCache } from "../../context/DataCacheContext";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default function CalendarView() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [lectures, setLectures] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: lecturesData, loading } = useCache("lectures", () => api.get("/lectures").then(r => r.data));
+  const lectures = lecturesData || [];
 
   // Selected date modal state
   const [selectedDateStr, setSelectedDateStr] = useState(null);
   const [selectedDayLectures, setSelectedDayLectures] = useState([]);
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await api.get("/lectures");
-        setLectures(res.data);
-      } catch {
-        // ignore
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth(); // 0-indexed

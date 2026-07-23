@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { DataCacheProvider } from "./context/DataCacheContext";
 import Login from "./pages/Login";
 import AdminLayout from "./components/Layout/AdminLayout";
 import InstructorLayout from "./components/Layout/InstructorLayout";
@@ -70,7 +71,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppRoutes />
+        <DataCacheProvider>
+          <AppRoutes />
+        </DataCacheProvider>
         <Toaster
           position="top-right"
           toastOptions={{
