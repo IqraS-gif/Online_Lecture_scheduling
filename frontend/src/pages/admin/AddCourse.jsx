@@ -139,16 +139,24 @@ export default function AddCourse() {
                   onChange={handleImage}
                   style={{ display: "none" }}
                 />
-                <Upload size={28} className="upload-icon" />
-                <div className="upload-text">Click to upload an image</div>
-                <div className="upload-hint">PNG, JPG, WebP up to 10 MB</div>
-                {preview && (
-                  <img
-                    src={preview}
-                    alt="Preview"
-                    className="image-preview"
-                    onClick={e => e.stopPropagation()}
-                  />
+                {preview ? (
+                  <>
+                    <img
+                      src={preview}
+                      alt="Preview"
+                      className="image-preview"
+                      onClick={e => e.stopPropagation()}
+                    />
+                    <div className="upload-hint" style={{ marginTop: 10 }}>
+                      Click anywhere to change image
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Upload size={28} className="upload-icon" />
+                    <div className="upload-text">Click to upload an image</div>
+                    <div className="upload-hint">PNG, JPG, WebP up to 10 MB</div>
+                  </>
                 )}
               </div>
             </div>

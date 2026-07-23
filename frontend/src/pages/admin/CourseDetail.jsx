@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   ArrowLeft, Plus, Trash2, BookOpen, ImageOff,
-  CalendarDays, Clock, Users, X, AlertCircle
+  CalendarDays, Clock, Users, X, AlertCircle, TriangleAlert
 } from "lucide-react";
 import api from "../../api";
 import toast from "react-hot-toast";
@@ -29,6 +29,7 @@ export default function CourseDetail() {
   });
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState("");
+  const [conflictError, setConflictError] = useState("");
 
   const loadData = async () => {
     try {
@@ -52,6 +53,7 @@ export default function CourseDetail() {
   const handleFormChange = (e) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
     setFormError("");
+    setConflictError("");
   };
 
   const handleAddLecture = async (e) => {
@@ -83,8 +85,14 @@ export default function CourseDetail() {
       setForm({ lectureTitle: "", batch: "", instructorId: "", lectureDate: "", startTime: "", endTime: "", status: "Scheduled" });
       await loadData();
     } catch (err) {
+      const status = err?.response?.status;
       const msg = err?.response?.data?.detail || "Failed to schedule lecture";
-      setFormError(msg);
+      if (status === 409) {
+        // Show as a separate conflict popup
+        setConflictError(msg);
+      } else {
+        setFormError(msg);
+      }
     } finally {
       setFormLoading(false);
     }
@@ -377,6 +385,38 @@ export default function CourseDetail() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Schedule Conflict Warning Popup Modal */}
+      {conflictError && (
+        <div className="modal-overlay" style={{ zIndex: 300 }} onClick={() => setConflictError("")}>
+          <div className="modal" style={{ maxWidth: 460, textAlign: "center" }} onClick={e => e.stopPropagation()}>
+            <div className="modal-body" style={{ padding: "32px 24px 24px" }}>
+              <div style={{
+                width: 64, height: 64, borderRadius: "50%",
+                background: "var(--red-bg)", color: "var(--red)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                margin: "0 auto 16px"
+              }}>
+                <TriangleAlert size={32} />
+              </div>
+              <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--dark)", marginBottom: 10 }}>
+                Schedule Conflict Detected
+              </h3>
+              <p style={{ fontSize: 14, color: "var(--gray-600)", lineHeight: 1.6, marginBottom: 24 }}>
+                {conflictError}
+              </p>
+              <button
+                type="button"
+                className="btn btn-primary"
+                style={{ width: "100%", justifyContent: "center", padding: "12px" }}
+                onClick={() => setConflictError("")}
+              >
+                Understand &amp; Resolve
+              </button>
+            </div>
           </div>
         </div>
       )}

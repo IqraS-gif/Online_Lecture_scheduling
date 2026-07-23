@@ -111,16 +111,38 @@ export default function Login() {
           </button>
         </form>
 
-        <div style={{ marginTop: 32, padding: "16px", background: "var(--gray-50)", borderRadius: "var(--radius-md)", width: "100%" }}>
-          <p style={{ fontSize: 12, fontWeight: 600, color: "var(--gray-600)", marginBottom: 8 }}>
-            Default credentials (after seeding):
+        <div style={{ marginTop: 24, padding: "16px", background: "var(--gray-50)", border: "1px solid var(--gray-200)", borderRadius: "var(--radius-lg)", width: "100%" }}>
+          <p style={{ fontSize: 12, fontWeight: 700, color: "var(--gray-700)", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+            Click to auto-fill demo login:
           </p>
-          <p style={{ fontSize: 12, color: "var(--gray-500)" }}>
-            Admin: admin@lecschedule.com / Password@123
-          </p>
-          <p style={{ fontSize: 12, color: "var(--gray-500)" }}>
-            Instructor: rahul@lecschedule.com / Password@123
-          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              style={{ justifyContent: "space-between", width: "100%", padding: "8px 12px", background: "var(--white)" }}
+              onClick={() => {
+                setEmail("admin@lecschedule.com");
+                setPassword("Password@123");
+                setError("");
+              }}
+            >
+              <span style={{ fontWeight: 600, color: "var(--orange-600)" }}>Admin Account</span>
+              <span style={{ fontSize: 11, color: "var(--gray-500)" }}>admin@lecschedule.com</span>
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              style={{ justifyContent: "space-between", width: "100%", padding: "8px 12px", background: "var(--white)" }}
+              onClick={() => {
+                setEmail("rahul@lecschedule.com");
+                setPassword("Password@123");
+                setError("");
+              }}
+            >
+              <span style={{ fontWeight: 600, color: "var(--purple)" }}>Instructor Account</span>
+              <span style={{ fontSize: 11, color: "var(--gray-500)" }}>rahul@lecschedule.com</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
