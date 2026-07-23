@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard, Users, BookOpen, LogOut, GraduationCap
+  LayoutDashboard, Users, BookOpen, LogOut, GraduationCap, Calendar
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
@@ -9,10 +9,12 @@ const adminLinks = [
   { to: "/admin/dashboard",   label: "Dashboard",    icon: LayoutDashboard },
   { to: "/admin/instructors", label: "Instructors",   icon: Users },
   { to: "/admin/courses",     label: "Courses",       icon: BookOpen },
+  { to: "/admin/calendar",    label: "Calendar",      icon: Calendar },
 ];
 
 const instructorLinks = [
   { to: "/instructor/lectures", label: "My Lectures", icon: GraduationCap },
+  { to: "/instructor/calendar", label: "My Calendar",  icon: Calendar },
 ];
 
 export default function Sidebar({ role }) {

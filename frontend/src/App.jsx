@@ -9,7 +9,9 @@ import Instructors from "./pages/admin/Instructors";
 import Courses from "./pages/admin/Courses";
 import AddCourse from "./pages/admin/AddCourse";
 import CourseDetail from "./pages/admin/CourseDetail";
+import CalendarView from "./pages/admin/CalendarView";
 import MyLectures from "./pages/instructor/MyLectures";
+import InstructorCalendarView from "./pages/instructor/InstructorCalendarView";
 
 function ProtectedRoute({ children, role }) {
   const { profile, loading } = useAuth();
@@ -42,6 +44,7 @@ function AppRoutes() {
         <Route path="courses" element={<Courses />} />
         <Route path="courses/add" element={<AddCourse />} />
         <Route path="courses/:id" element={<CourseDetail />} />
+        <Route path="calendar" element={<CalendarView />} />
       </Route>
 
       {/* Instructor Routes */}
@@ -50,6 +53,7 @@ function AppRoutes() {
       }>
         <Route index element={<Navigate to="lectures" replace />} />
         <Route path="lectures" element={<MyLectures />} />
+        <Route path="calendar" element={<InstructorCalendarView />} />
       </Route>
 
       <Route path="/" element={
