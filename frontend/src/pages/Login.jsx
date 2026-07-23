@@ -1,16 +1,35 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { GraduationCap, Mail, Lock, BookOpen, Users, CalendarCheck } from "lucide-react";
+import {
+  GraduationCap, Mail, Lock, BookOpen, Users, CalendarCheck,
+  ShieldCheck, ArrowLeft, ChevronRight
+} from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
   const navigate = useNavigate();
+
+  // Portal selection state: null | "admin" | "instructor"
+  const [selectedPortal, setSelectedPortal] = useState(null);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const handleSelectPortal = (portal) => {
+    setSelectedPortal(portal);
+    setError("");
+    if (portal === "admin") {
+      setEmail("admin@lecschedule.com");
+      setPassword("Password@123");
+    } else if (portal === "instructor") {
+      setEmail("rahul@lecschedule.com");
+      setPassword("Password@123");
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,6 +37,18 @@ export default function Login() {
     setLoading(true);
     try {
       const profile = await login(email.trim(), password);
+
+      // Access control: role must match the selected portal
+      if (selectedPortal && profile.role !== selectedPortal) {
+        await logout();
+        const portalLabel = selectedPortal === "admin" ? "Admin Portal" : "Instructor Portal";
+        const accountLabel = profile.role === "admin" ? "an Admin" : "an Instructor";
+        const msg = `Access denied. This account is ${accountLabel} account. Please use the correct portal.`;
+        setError(msg);
+        toast.error(`Wrong portal — this is ${accountLabel} account.`);
+        return;
+      }
+
       toast.success(`Welcome back, ${profile.name}!`);
       navigate(profile.role === "admin" ? "/admin/dashboard" : "/instructor/lectures");
     } catch (err) {
@@ -50,7 +81,7 @@ export default function Login() {
           <path d="M-20 120 Q160 140 260 60" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" fill="none" />
         </svg>
 
-        {/* Bottom-Right Organic Layered Wave SVG with Contour Lines */}
+        {/* Bottom-Right Organic Layered Wave SVG */}
         <svg className="login-bg-wave-br-svg" viewBox="0 0 600 600" fill="none" preserveAspectRatio="none">
           <defs>
             <linearGradient id="waveBr1" x1="100%" y1="100%" x2="0%" y2="0%">
@@ -75,7 +106,6 @@ export default function Login() {
 
         {/* Floating Center Hero Card */}
         <div className="login-hero-card">
-          {/* Card Decorative Accents */}
           <div className="login-dot-grid-left" />
           <div className="login-dot-grid-right" />
           <svg className="login-card-arc-tr" viewBox="0 0 160 160" fill="none">
@@ -90,7 +120,7 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Title with Underline Accent */}
+          {/* Title */}
           <h1 className="login-hero-title">
             Lec<span className="text-orange-highlight">Schedule</span>
           </h1>
@@ -137,87 +167,239 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Right Sign In Panel */}
+      {/* Right Panel: Portal Selection or Login Form */}
       <div className="login-right">
-        <h2 className="login-form-title">Welcome back</h2>
-        <p className="login-form-sub">Sign in to continue to LecSchedule</p>
+        {selectedPortal === null ? (
+          /* PORTAL SELECTION SCREEN */
+          <div style={{ width: "100%", textAlign: "center" }}>
+            <h2 className="login-form-title" style={{ fontSize: 26, marginBottom: 8 }}>
+              Select Portal
+            </h2>
+            <p className="login-form-sub" style={{ marginBottom: 32 }}>
+              Choose your role to log into your workspace
+            </p>
 
-        {error && (
-          <div className="alert alert-error" style={{ width: "100%", marginBottom: 16 }}>
-            {error}
+            <div style={{ display: "flex", flexDirection: "column", gap: 16, width: "100%" }}>
+              {/* Admin Portal Selection Button */}
+              <div
+                className="portal-select-card"
+                onClick={() => handleSelectPortal("admin")}
+                style={{
+                  background: "var(--white)",
+                  border: "2px solid var(--orange-200)",
+                  borderRadius: "var(--radius-lg)",
+                  padding: "20px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                  textAlign: "left"
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                  <div style={{
+                    width: 48, height: 48, borderRadius: "50%",
+                    background: "var(--orange-50)", color: "var(--orange-600)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    flexShrink: 0
+                  }}>
+                    <ShieldCheck size={24} />
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: 16, color: "var(--dark)" }}>
+                      Admin Portal
+                    </div>
+                    <div style={{ fontSize: 12, color: "var(--gray-600)", marginTop: 2 }}>
+                      Manage courses, schedule lectures &amp; instructors
+                    </div>
+                  </div>
+                </div>
+                <div style={{ color: "var(--orange-500)", display: "flex", alignItems: "center" }}>
+                  <ChevronRight size={20} />
+                </div>
+              </div>
+
+              {/* Instructor Portal Selection Button */}
+              <div
+                className="portal-select-card"
+                onClick={() => handleSelectPortal("instructor")}
+                style={{
+                  background: "var(--white)",
+                  border: "2px solid var(--purple-bg)",
+                  borderRadius: "var(--radius-lg)",
+                  padding: "20px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                  textAlign: "left"
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                  <div style={{
+                    width: 48, height: 48, borderRadius: "50%",
+                    background: "var(--purple-bg)", color: "var(--purple)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    flexShrink: 0
+                  }}>
+                    <GraduationCap size={24} />
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: 16, color: "var(--dark)" }}>
+                      Instructor Portal
+                    </div>
+                    <div style={{ fontSize: 12, color: "var(--gray-600)", marginTop: 2 }}>
+                      View assigned lectures, batches &amp; calendar
+                    </div>
+                  </div>
+                </div>
+                <div style={{ color: "var(--purple)", display: "flex", alignItems: "center" }}>
+                  <ChevronRight size={20} />
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* LOGIN FORM SCREEN FOR SELECTED PORTAL */
+          <div style={{ width: "100%" }}>
+            {/* Switch Portal Back Button */}
+            <button
+              type="button"
+              onClick={() => { setSelectedPortal(null); setError(""); }}
+              style={{
+                background: "none", border: "none", color: "var(--orange-600)",
+                fontSize: 13, fontWeight: 700, cursor: "pointer", display: "inline-flex",
+                alignItems: "center", gap: 6, marginBottom: 20
+              }}
+            >
+              <ArrowLeft size={15} /> Switch Portal
+            </button>
+
+            <h2 className="login-form-title">
+              {selectedPortal === "admin" ? "Admin Sign In" : "Instructor Sign In"}
+            </h2>
+            <p className="login-form-sub">
+              {selectedPortal === "admin"
+                ? "Enter your admin credentials to access control panel"
+                : "Enter your credentials to view your assigned lectures"}
+            </p>
+
+            {error && (
+              <div className="alert alert-error" style={{ width: "100%", marginBottom: 16 }}>
+                {error}
+              </div>
+            )}
+
+            <form className="login-form" onSubmit={handleSubmit}>
+              <div className="login-input-wrapper">
+                <Mail size={16} className="login-input-icon" />
+                <input
+                  id="login-email"
+                  type="email"
+                  className="login-input"
+                  placeholder="Email address"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                />
+              </div>
+              <div className="login-input-wrapper">
+                <Lock size={16} className="login-input-icon" />
+                <input
+                  id="login-password"
+                  type="password"
+                  className="login-input"
+                  placeholder="Password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  autoComplete="current-password"
+                />
+              </div>
+              <button
+                id="login-submit"
+                type="submit"
+                className="login-submit"
+                disabled={loading}
+              >
+                {loading ? "Signing in..." : `Sign In to ${selectedPortal === "admin" ? "Admin" : "Instructor"} Portal`}
+              </button>
+            </form>
+
+            {/* Demo Credentials Box */}
+            <div style={{
+              marginTop: 24, padding: "16px", background: "var(--gray-50)",
+              border: "1px solid var(--gray-200)", borderRadius: "var(--radius-lg)", width: "100%"
+            }}>
+              <p style={{
+                fontSize: 11, fontWeight: 800, color: "var(--dark)",
+                marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.04em"
+              }}>
+                Demo Credentials (Click to auto-fill):
+              </p>
+              {selectedPortal === "admin" ? (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  style={{ justifyContent: "space-between", width: "100%", padding: "8px 12px", background: "var(--white)" }}
+                  onClick={() => {
+                    setEmail("admin@lecschedule.com");
+                    setPassword("Password@123");
+                    setError("");
+                  }}
+                >
+                  <span style={{ fontWeight: 700, color: "var(--orange-600)" }}>Admin Account</span>
+                  <span style={{ fontSize: 11, color: "var(--gray-600)", fontWeight: 600 }}>admin@lecschedule.com</span>
+                </button>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    style={{ justifyContent: "space-between", width: "100%", padding: "8px 12px", background: "var(--white)" }}
+                    onClick={() => {
+                      setEmail("rahul@lecschedule.com");
+                      setPassword("Password@123");
+                      setError("");
+                    }}
+                  >
+                    <span style={{ fontWeight: 700, color: "var(--purple)" }}>Rahul (Instructor)</span>
+                    <span style={{ fontSize: 11, color: "var(--gray-600)", fontWeight: 600 }}>rahul@lecschedule.com</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    style={{ justifyContent: "space-between", width: "100%", padding: "8px 12px", background: "var(--white)" }}
+                    onClick={() => {
+                      setEmail("priya@lecschedule.com");
+                      setPassword("Password@123");
+                      setError("");
+                    }}
+                  >
+                    <span style={{ fontWeight: 700, color: "var(--purple)" }}>Priya (Instructor)</span>
+                    <span style={{ fontSize: 11, color: "var(--gray-600)", fontWeight: 600 }}>priya@lecschedule.com</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    style={{ justifyContent: "space-between", width: "100%", padding: "8px 12px", background: "var(--white)" }}
+                    onClick={() => {
+                      setEmail("aman@lecschedule.com");
+                      setPassword("Password@123");
+                      setError("");
+                    }}
+                  >
+                    <span style={{ fontWeight: 700, color: "var(--purple)" }}>Aman (Instructor)</span>
+                    <span style={{ fontSize: 11, color: "var(--gray-600)", fontWeight: 600 }}>aman@lecschedule.com</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         )}
-
-        <form className="login-form" onSubmit={handleSubmit}>
-          <div className="login-input-wrapper">
-            <Mail size={16} className="login-input-icon" />
-            <input
-              id="login-email"
-              type="email"
-              className="login-input"
-              placeholder="Email address"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-            />
-          </div>
-          <div className="login-input-wrapper">
-            <Lock size={16} className="login-input-icon" />
-            <input
-              id="login-password"
-              type="password"
-              className="login-input"
-              placeholder="Password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-              autoComplete="current-password"
-            />
-          </div>
-          <button
-            id="login-submit"
-            type="submit"
-            className="login-submit"
-            disabled={loading}
-          >
-            {loading ? "Signing in..." : "Sign In"}
-          </button>
-        </form>
-
-        <div style={{ marginTop: 24, padding: "16px", background: "var(--gray-50)", border: "1px solid var(--gray-200)", borderRadius: "var(--radius-lg)", width: "100%" }}>
-          <p style={{ fontSize: 12, fontWeight: 700, color: "var(--gray-700)", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-            Click to auto-fill demo login:
-          </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              style={{ justifyContent: "space-between", width: "100%", padding: "8px 12px", background: "var(--white)" }}
-              onClick={() => {
-                setEmail("admin@lecschedule.com");
-                setPassword("Password@123");
-                setError("");
-              }}
-            >
-              <span style={{ fontWeight: 600, color: "var(--orange-600)" }}>Admin Account</span>
-              <span style={{ fontSize: 11, color: "var(--gray-500)" }}>admin@lecschedule.com</span>
-            </button>
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              style={{ justifyContent: "space-between", width: "100%", padding: "8px 12px", background: "var(--white)" }}
-              onClick={() => {
-                setEmail("rahul@lecschedule.com");
-                setPassword("Password@123");
-                setError("");
-              }}
-            >
-              <span style={{ fontWeight: 600, color: "var(--purple)" }}>Instructor Account</span>
-              <span style={{ fontSize: 11, color: "var(--gray-500)" }}>rahul@lecschedule.com</span>
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
