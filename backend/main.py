@@ -13,10 +13,8 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS — allow the React dev server (must be set in .env)
-frontend_origin = os.getenv("FRONTEND_ORIGIN")
-if not frontend_origin:
-    raise RuntimeError("FRONTEND_ORIGIN is not set in .env")
+# CORS — allow the React frontend (set FRONTEND_ORIGIN in production env vars)
+frontend_origin = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[frontend_origin],
