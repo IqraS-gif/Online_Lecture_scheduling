@@ -31,6 +31,14 @@ app.include_router(users.router)
 app.include_router(courses.router)
 app.include_router(lectures.router)
 
+@app.on_event("startup")
+def startup_event():
+    try:
+        from firebase_config import get_db
+        get_db()
+        print("Firebase Admin SDK initialized successfully.")
+    except Exception as e:
+        print(f"Error initializing Firebase on startup: {e}")
 
 @app.get("/")
 async def root():

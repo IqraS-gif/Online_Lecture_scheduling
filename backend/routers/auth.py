@@ -15,13 +15,12 @@ async def verify_token(payload: dict):
     if not id_token:
         raise HTTPException(status_code=400, detail="idToken is required")
 
+    db = get_db()
     try:
         decoded = firebase_auth.verify_id_token(id_token)
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
-
-    uid = decoded["uid"]
-    db = get_db()
+    except Exception as e:
+        print(f"Token verification error: {e}")
+        raise HTTPException(status_code=401, detail=f"Invalid or expired token: {e}")
     user_doc = db.collection("users").document(uid).get()
 
     if not user_doc.exists:
