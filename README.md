@@ -73,6 +73,72 @@ Whether you're managing multiple batches or tracking individual instructor agend
 
 ---
 
+## 📋 Comprehensive Validation Matrix
+
+All input data, authentication credentials, and scheduling logic undergo multi-layered validation across the frontend client and backend API:
+
+| Validation Target | Layer | Enforcement Location | Trigger Rule / Logic | Response & Handling |
+| :--- | :--- | :--- | :--- | :--- |
+| **Instructor Date Conflict** | **Backend API** | `backend/routers/lectures.py` | Checks Firestore `schedules` collection for existing `(instructorId, date)` pair | Returns `HTTP 409 Conflict`. Frontend opens dedicated Conflict Resolution Modal |
+| **Past-Time Prevention** | **Frontend** | `frontend/src/pages/admin/CourseDetail.jsx` | If selected `lectureDate === today`, verifies `startTime > currentTime` | Prevents submit, displays inline alert: *"Start time has already passed for today"* |
+| **Chronological Time Order** | **Frontend** | `frontend/src/pages/admin/CourseDetail.jsx` | Verifies `startTime < endTime` | Prevents submit, displays inline alert: *"End time must be after start time"* |
+| **Portal Access Control (RBAC)** | **Frontend** | `frontend/src/pages/Login.jsx` | Matches Firestore profile `role` against selected portal (`admin` vs `instructor`) | Denies access, logs out user, displays toast: *"Wrong portal — this is an Admin/Instructor account"* |
+| **Firebase ID Token Validity** | **Backend API** | `backend/routers/auth.py` | `firebase_auth.verify_id_token(idToken)` checks JWT signature, `iat`, and `exp` | Returns `HTTP 401 Unauthorized` with exact failure reason |
+| **Required Form Fields** | **Frontend** | `AddCourse.jsx`, `CourseDetail.jsx` | Checks that title, course, batch, instructor, date, start & end times are non-empty | Blocks form submission & highlights missing fields in red |
+| **Course Image MIME & File Type** | **Frontend** | `frontend/src/pages/admin/AddCourse.jsx` | Checks `file.type.startsWith("image/")` | Displays toast: *"Please select an image file"* |
+| **Environment Credential Parsing** | **Backend** | `backend/firebase_config.py` | Checks string format: raw JSON (`startsWith("{")`) vs Base64 (`b64decode`) | Gracefully throws `ValueError` during boot if credentials format is corrupted |
+
+---
+
+## 📈 Scalability Architecture
+
+The application is engineered to handle growing datasets and high concurrent user traffic efficiently:
+
+### 1. Fast Indexing with Denormalized Lookup
+- Instead of performing costly nested queries across all lectures, the system maintains a dedicated **`schedules` Firestore collection**.
+- Conflict checks execute an indexed $O(1)$ query on `(instructorId, date)`, ensuring instant response times even as the total lecture volume grows into millions.
+
+### 2. Client-Side In-Memory Data Caching (`DataCacheContext`)
+- Implements a TTL-based (5-minute) in-memory cache for API resources (`courses`, `instructors`, `lectures`).
+- **Eliminates Redundant Network Requests**: Navigating between pages consumes cached data instantly.
+- **Selective Mutation Invalidation**: Adding or deleting resources triggers pattern-based invalidations (`invalidatePattern("lectures")`), ensuring data freshness across components without over-fetching.
+
+### 3. Asynchronous Non-Blocking Backend
+- Built on **FastAPI** and **Uvicorn**, leveraging Python's `asyncio` loop for high-throughput I/O bound operations.
+
+### 4. Stateless Container Architecture
+- The FastAPI backend maintains no in-memory session state. All session information resides in cryptographically signed Firebase JWTs.
+- This allows **horizontal scaling** (adding more container instances on Render or serverless environments) behind a load balancer without sticky sessions.
+
+### 5. Media Content Delivery Network (CDN)
+- Course cover images are stored and processed on **Cloudinary's Global CDN**, offloading asset delivery from the backend server and guaranteeing fast load times globally.
+
+---
+
+## 🛡️ Security Model
+
+### 1. Cryptographic Authentication & Token Verification
+- Authentication is handled via **Firebase Auth**.
+- The backend verifies Firebase-signed Bearer ID tokens on protected API endpoints using the **Firebase Admin SDK**.
+
+### 2. Strict Cross-Origin Resource Sharing (CORS) Policy
+- Backend CORS configuration in `backend/main.py` explicitly restricts allowed origins:
+  ```python
+  allow_origins=["http://localhost:5173", "https://online-lecture-scheduling-nine.vercel.app"]
+  allow_origin_regex=r"https://.*\.vercel\.app"
+  ```
+- Prevents unauthorized cross-site requests while allowing Vercel deployment URLs.
+
+### 3. Global Exception Handler & CORS Leak Protection
+- Standard FastAPI 500 errors can omit CORS headers, causing browsers to display misleading CORS errors.
+- A custom global exception handler in `main.py` catches all unhandled server exceptions and attaches appropriate CORS headers, preserving security while surfacing clear diagnostic error messages.
+
+### 4. Secret Isolation & Zero Hardcoded Credentials
+- Service account private keys and API credentials are kept out of source control via `.gitignore`.
+- Supports raw JSON strings and Base64-encoded strings (`FIREBASE_CREDENTIALS_JSON`) for safe environment variable injection on cloud platforms like Render.
+
+---
+
 ## 🛠️ Tech Stack
 
 | Domain | Technology | Purpose |
