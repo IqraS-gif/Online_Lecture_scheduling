@@ -13,13 +13,14 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS — allow the React frontend (set FRONTEND_ORIGIN in production env vars)
+# CORS — allow React frontend (supports localhost, custom origins, and all *.vercel.app preview URLs)
 raw_origins = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173,https://online-lecture-scheduling-nine.vercel.app")
 origins = [o.strip() for o in raw_origins.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins if origins else ["*"],
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
