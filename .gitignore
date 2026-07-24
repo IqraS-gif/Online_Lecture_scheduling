@@ -13,6 +13,7 @@
 
 # data folder (contains firebase credentials)
 data/
+!data/database_dump.json
 
 # Python
 __pycache__/

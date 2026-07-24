@@ -243,13 +243,23 @@ uvicorn main:app --reload --port 8000
 
 ---
 
-### 3. Database Seeding (First Time Setup)
+### 3. Database Seeding & Data Dump (First Time Setup)
 
-Run the seed command to create the default Admin and Instructor accounts in Firestore:
+You can seed the database using any of the following methods:
 
+**Method A: Running the Standalone Python Seed Script**
+```bash
+python backend/seed.py
+```
+
+**Method B: Triggering the API Endpoint**
 ```bash
 curl -X POST http://localhost:8000/users/seed
 ```
+
+**Database Dump File**:
+A static JSON dump containing complete sample documents for all collections (`users`, `courses`, `lectures`, `schedules`) is included in:
+- [`data/database_dump.json`](file:///c:/Users/iqras/Downloads/Online_course_management/data/database_dump.json)
 
 ---
 
