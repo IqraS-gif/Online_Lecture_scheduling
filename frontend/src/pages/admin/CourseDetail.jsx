@@ -18,32 +18,54 @@ function TimePicker({ value, onChange, label, id }) {
     return { hour: String(hour), minute: String(m).padStart(2, "0"), ampm };
   };
 
-  const to24 = (hour, minute, ampm) => {
-    let h = parseInt(hour, 10);
-    if (isNaN(h)) return "";
-    if (ampm === "AM") { if (h === 12) h = 0; }
-    else               { if (h !== 12) h += 12; }
-    return `${String(h).padStart(2, "0")}:${minute}`;
+  const to24 = (hStr, mStr, ap) => {
+    let h = parseInt(hStr, 10);
+    let m = parseInt(mStr, 10);
+    if (isNaN(h)) h = 12;
+    if (isNaN(m)) m = 0;
+    if (ap === "AM") {
+      if (h === 12) h = 0;
+    } else {
+      if (h !== 12) h += 12;
+    }
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   };
 
   const { hour, minute, ampm } = parse(value);
 
-  const set = (h, m, a) => { const v24 = to24(h, m, a); if (v24) onChange(v24); };
+  const set = (h, m, a) => {
+    const v24 = to24(h, m, a);
+    onChange(v24);
+  };
 
   const handleHour = (e) => {
-    let v = e.target.value.replace(/\D/g, "").slice(0, 2);
-    if (v && parseInt(v) > 12) v = "12";
-    if (v && parseInt(v) < 1)  v = "1";
-    set(v || hour, minute, ampm);
+    let digits = e.target.value.replace(/\D/g, "");
+    if (digits.length > 2) digits = digits.slice(-2);
+    let num = parseInt(digits, 10);
+    let hVal = digits;
+    if (!isNaN(num)) {
+      if (num > 12) num = 12;
+      if (num < 1 && digits !== "") num = 1;
+      hVal = String(num);
+    }
+    set(hVal, minute, ampm);
   };
 
   const handleMinute = (e) => {
-    let v = e.target.value.replace(/\D/g, "").slice(0, 2);
-    if (v && parseInt(v) > 59) v = "59";
-    set(hour, v.padStart(2, "0") || minute, ampm);
+    let digits = e.target.value.replace(/\D/g, "");
+    if (digits.length > 2) digits = digits.slice(-2);
+    let num = parseInt(digits, 10);
+    let mVal = digits;
+    if (!isNaN(num)) {
+      if (num > 59) num = 59;
+      mVal = String(num).padStart(2, "0");
+    } else {
+      mVal = "00";
+    }
+    set(hour || "12", mVal, ampm);
   };
 
-  const toggleAmPm = (a) => set(hour, minute, a);
+  const toggleAmPm = (a) => set(hour || "12", minute, a);
 
   return (
     <div className="form-group">
@@ -58,10 +80,10 @@ function TimePicker({ value, onChange, label, id }) {
           id={id}
           type="text"
           inputMode="numeric"
-          maxLength={2}
           placeholder="--"
           value={hour}
           onChange={handleHour}
+          onFocus={e => e.target.select()}
           style={{
             width: 42, border: "none", background: "transparent",
             fontSize: 22, fontWeight: 700, textAlign: "center",
@@ -73,10 +95,10 @@ function TimePicker({ value, onChange, label, id }) {
         <input
           type="text"
           inputMode="numeric"
-          maxLength={2}
           placeholder="00"
           value={minute}
           onChange={handleMinute}
+          onFocus={e => e.target.select()}
           style={{
             width: 42, border: "none", background: "var(--gray-200)",
             fontSize: 22, fontWeight: 700, textAlign: "center",
