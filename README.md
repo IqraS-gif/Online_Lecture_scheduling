@@ -13,7 +13,7 @@
 
   <br />
 
-  [🌐 **Live Web Application**](https://online-lecture-scheduling-nine.vercel.app) • [⚡ **Live API Documentation**](https://online-lecture-scheduling-b8nv.onrender.com/docs)
+  [🌐 **Live Web Application**](https://online-lecture-scheduling-nine.vercel.app) • [⚡ **Live API Documentation**](https://online-lecture-scheduling-b8nv.onrender.com/docs) • [🎬 **Video Demo**](https://drive.google.com/file/d/1pOyjAxi6B1Qu38Ur5XzL6N4sBfIlmVWx/view?usp=sharing)
 
 </div>
 
@@ -60,6 +60,7 @@ Whether you're managing multiple batches or tracking individual instructor agend
 - **Backend API (Render)**: [https://online-lecture-scheduling-b8nv.onrender.com](https://online-lecture-scheduling-b8nv.onrender.com)
 - **API Health Check (Cron Ping)**: [https://online-lecture-scheduling-b8nv.onrender.com/health](https://online-lecture-scheduling-b8nv.onrender.com/health) *(Returns 17 bytes: `{"status":"ok"}`)*
 - **API Swagger Docs**: [https://online-lecture-scheduling-b8nv.onrender.com/docs](https://online-lecture-scheduling-b8nv.onrender.com/docs)
+- **Project Demo Video**: [Watch Video Demo on Google Drive](https://drive.google.com/file/d/1pOyjAxi6B1Qu38Ur5XzL6N4sBfIlmVWx/view?usp=sharing)
 
 ### 🔑 Demo Login Accounts
 
