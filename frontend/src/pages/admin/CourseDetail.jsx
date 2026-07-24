@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   ArrowLeft, Plus, Trash2, BookOpen, ImageOff,
@@ -9,63 +9,76 @@ import toast from "react-hot-toast";
 
 // ─── Custom Time Picker ───────────────────────────────────────────────────────
 function TimePicker({ value, onChange, label, id }) {
-  // value is "HH:MM" in 24-hour format
-  const parse = (v) => {
-    if (!v) return { hour: "", minute: "00", ampm: "AM" };
-    const [h, m] = v.split(":").map(Number);
-    const ampm = h >= 12 ? "PM" : "AM";
-    const hour = h % 12 === 0 ? 12 : h % 12;
-    return { hour: String(hour), minute: String(m).padStart(2, "0"), ampm };
+  const parse24 = (v) => {
+    if (!v) return { h: "", m: "00", ap: "AM" };
+    const [h24, m24] = v.split(":").map(Number);
+    const ap = h24 >= 12 ? "PM" : "AM";
+    let h12 = h24 % 12;
+    if (h12 === 0) h12 = 12;
+    return {
+      h: String(h12),
+      m: String(m24).padStart(2, "0"),
+      ap,
+    };
   };
 
-  const to24 = (hStr, mStr, ap) => {
-    let h = parseInt(hStr, 10);
-    let m = parseInt(mStr, 10);
-    if (isNaN(h)) h = 12;
-    if (isNaN(m)) m = 0;
-    if (ap === "AM") {
-      if (h === 12) h = 0;
-    } else {
-      if (h !== 12) h += 12;
+  const parsed = parse24(value);
+  const [hInput, setHInput] = useState(parsed.h);
+  const [mInput, setMInput] = useState(parsed.m);
+  const [amPm, setAmPm] = useState(parsed.ap);
+
+  useEffect(() => {
+    const p = parse24(value);
+    setHInput(p.h);
+    setMInput(p.m);
+    setAmPm(p.ap);
+  }, [value]);
+
+  const updateParent = (hStr, mStr, apVal) => {
+    if (!hStr) {
+      onChange("");
+      return;
     }
-    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-  };
+    let h = parseInt(hStr, 10);
+    let m = parseInt(mStr || "0", 10);
+    if (isNaN(h)) {
+      onChange("");
+      return;
+    }
+    if (h > 12) h = 12;
+    if (h < 1 && hStr !== "") h = 1;
+    if (isNaN(m) || m < 0) m = 0;
+    if (m > 59) m = 59;
 
-  const { hour, minute, ampm } = parse(value);
+    let h24 = h;
+    if (apVal === "AM") {
+      if (h24 === 12) h24 = 0;
+    } else {
+      if (h24 !== 12) h24 += 12;
+    }
 
-  const set = (h, m, a) => {
-    const v24 = to24(h, m, a);
-    onChange(v24);
+    const formatted24 = `${String(h24).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+    onChange(formatted24);
   };
 
   const handleHour = (e) => {
     let digits = e.target.value.replace(/\D/g, "");
     if (digits.length > 2) digits = digits.slice(-2);
-    let num = parseInt(digits, 10);
-    let hVal = digits;
-    if (!isNaN(num)) {
-      if (num > 12) num = 12;
-      if (num < 1 && digits !== "") num = 1;
-      hVal = String(num);
-    }
-    set(hVal, minute, ampm);
+    setHInput(digits);
+    updateParent(digits, mInput, amPm);
   };
 
   const handleMinute = (e) => {
     let digits = e.target.value.replace(/\D/g, "");
     if (digits.length > 2) digits = digits.slice(-2);
-    let num = parseInt(digits, 10);
-    let mVal = digits;
-    if (!isNaN(num)) {
-      if (num > 59) num = 59;
-      mVal = String(num).padStart(2, "0");
-    } else {
-      mVal = "00";
-    }
-    set(hour || "12", mVal, ampm);
+    setMInput(digits);
+    updateParent(hInput, digits, amPm);
   };
 
-  const toggleAmPm = (a) => set(hour || "12", minute, a);
+  const toggleAmPm = (a) => {
+    setAmPm(a);
+    updateParent(hInput, mInput, a);
+  };
 
   return (
     <div className="form-group">
@@ -80,8 +93,9 @@ function TimePicker({ value, onChange, label, id }) {
           id={id}
           type="text"
           inputMode="numeric"
+          autoComplete="off"
           placeholder="--"
-          value={hour}
+          value={hInput}
           onChange={handleHour}
           onFocus={e => e.target.select()}
           style={{
@@ -95,8 +109,9 @@ function TimePicker({ value, onChange, label, id }) {
         <input
           type="text"
           inputMode="numeric"
+          autoComplete="off"
           placeholder="00"
-          value={minute}
+          value={mInput}
           onChange={handleMinute}
           onFocus={e => e.target.select()}
           style={{
@@ -116,8 +131,8 @@ function TimePicker({ value, onChange, label, id }) {
               style={{
                 padding: "2px 10px", border: "none", borderRadius: "var(--radius-sm)",
                 fontWeight: 700, fontSize: 12, cursor: "pointer",
-                background: ampm === a ? "var(--orange-500)" : "var(--gray-200)",
-                color:      ampm === a ? "#fff"             : "var(--gray-600)",
+                background: amPm === a ? "var(--orange-500)" : "var(--gray-200)",
+                color:      amPm === a ? "#fff"             : "var(--gray-600)",
               }}
             >
               {a}
